@@ -1,5 +1,5 @@
-package com.his.AppointmentSchedulingSystem.model;
+package com.appointment.his.model;
 
 public enum Status {
-ACTIVE,CANCELED;
+ACTIVE,CANCELED,COMPLETED;
 }
