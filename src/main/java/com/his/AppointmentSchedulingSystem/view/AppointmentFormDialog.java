@@ -1,4 +1,4 @@
-package com.his.AppointmentSchedulingSystem.view;
+package com.appointment.his.view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -6,13 +6,11 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.Image;
-import java.lang.ModuleLayer.Controller;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
@@ -31,10 +29,10 @@ import javax.swing.JSpinner;
 import javax.swing.JTextField;
 import javax.swing.SpinnerDateModel;
 
-import com.his.AppointmentSchedulingSystem.controller.AppointmentController;
-import com.his.AppointmentSchedulingSystem.model.Appointment;
-import com.his.AppointmentSchedulingSystem.model.Doctor;
-import com.his.AppointmentSchedulingSystem.model.Patient;
+import com.appointment.his.controller.AppointmentController;
+import com.appointment.his.model.Appointment;
+import com.appointment.his.model.Doctor;
+import com.appointment.his.model.Patient;
 import com.toedter.calendar.JDateChooser;
 
 public class AppointmentFormDialog extends JDialog {
@@ -56,7 +54,7 @@ public class AppointmentFormDialog extends JDialog {
 	private Set<String> doctorsSet = new HashSet<>();
 	private DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd LLLL yyyy");
 	List<String> timeSlots;
-	
+	JPanel mainPanel;
 
 
 	public AppointmentFormDialog(Appointment appointment) {
@@ -64,23 +62,33 @@ public class AppointmentFormDialog extends JDialog {
 		setModal(true);
 		setSize(700, 600);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-		
+		setBackground(Color.WHITE);
+
 		setLocationRelativeTo(null);
 
-		JPanel mainPanel = new JPanel();
+		mainPanel = new JPanel();
 		mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 5, 5));
-		//mainPanel.setBackground(Color.CYAN);
+		mainPanel.setBackground(Color.WHITE);
 		mainPanel.setLayout(new BorderLayout(10, 10));
 
+
+		JPanel headerPanel = new JPanel();
+		headerPanel.setBackground(new Color(0, 153, 153));
+		JLabel headerLabel = new JLabel("Reschedule Appointment");
+		headerLabel.setForeground(Color.WHITE);
+		headerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+		headerPanel.add(headerLabel);
+		mainPanel.add(headerPanel, BorderLayout.NORTH);
+
 		JPanel formPanel = new JPanel(new GridLayout(12, 2, 10, 10));
-		//formPanel.setBackground(Color.WHITE);
+		formPanel.setBackground(Color.WHITE);
 
 		mainPanel.add(formPanel, BorderLayout.CENTER);
 
 		patients = AppointmentController.loadPatients();
 		doctors = AppointmentController.loadDoctors();
 
-		// MRI ID Field and Search Button
+
 		formPanel.add(new JLabel("MRD Number:"));
 		JPanel mriIdPanel = new JPanel(new BorderLayout());
 		mriIdTextField = new JTextField();
@@ -92,7 +100,7 @@ public class AppointmentFormDialog extends JDialog {
 		mriIdPanel.add(searchButton, BorderLayout.EAST);
 		formPanel.add(mriIdPanel);
 
-		// Patient Information Fields
+
 		formPanel.add(new JLabel("Patient Name:"));
 		patientNameField = new JTextField();
 		patientNameField.setEditable(false);
@@ -112,7 +120,7 @@ public class AppointmentFormDialog extends JDialog {
 		formPanel.add(new JSeparator());
 		formPanel.add(new JLabel());
 
-		// Department, Specialization, and Doctor Fields
+
 		formPanel.add(new JLabel("Department:"));
 		for (Doctor doctor : doctors) {
 			specializationArray.add(doctor.getDepartment());
@@ -129,7 +137,7 @@ public class AppointmentFormDialog extends JDialog {
 		doctorNameComboBox = new JComboBox<>();
 		formPanel.add(doctorNameComboBox);
 
-		// Appointment Date and Time
+
 		formPanel.add(new JLabel("Appointment Date:"));
 		appointmentDateChooser = new JDateChooser();
 		formPanel.add(appointmentDateChooser);
@@ -142,23 +150,35 @@ public class AppointmentFormDialog extends JDialog {
 		formPanel.add(appointmentTimeSpinner);
 		formPanel.add(new JLabel());
 
-		// Buttons Panel
+
 		buttonPanel = new JPanel(new GridLayout(2, 1, 10, 10));
 		scheduleAssistantButton = new JButton("Schedule Assistant");
 		scheduleAssistantButton.addActionListener(e -> openScheduleAssistantWindow());
+		scheduleAssistantButton.setBackground(new Color(0, 150, 139));
+		scheduleAssistantButton.setForeground(Color.WHITE);
 		JPanel centerPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+		centerPanel.setBackground(Color.white);
 		centerPanel.add(scheduleAssistantButton);
 
-		JPanel secondPanel = new JPanel(new GridLayout(1, 2, 10, 10));
+
+		JPanel secondPanel = new JPanel();
+		secondPanel.setLayout(new FlowLayout(FlowLayout.CENTER));
+		secondPanel.setBackground(Color.white);
+
 		submitButton = new JButton("Submit");
+		submitButton.setBackground(new Color(0, 150, 139));
+		submitButton.setForeground(Color.WHITE);
 		cancelButton = new JButton("Cancel");
+		cancelButton.setBackground(new Color(0, 150, 139));
+		cancelButton.setForeground(Color.WHITE);
 
 		secondPanel.add(submitButton);
 		secondPanel.add(cancelButton);
 
 		buttonPanel.add(centerPanel);
+		formPanel.add(new JSeparator());
 		buttonPanel.add(secondPanel);
-
+		buttonPanel.setBackground(Color.WHITE);
 		mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 		add(mainPanel);
 
@@ -168,13 +188,13 @@ public class AppointmentFormDialog extends JDialog {
 		departmentComboBox.addActionListener(e -> updateSpecializationComboBox());
 		specializationComboBox.addActionListener(e -> updateDoctorComboBox());
 
-		// Pre-fill the form if an appointment is provided
+
 		if (appointment != null) {
 			this.appointment = appointment;
 			selectedPatient = appointment.getPatient();
 			selectedDoctor = appointment.getDoctor();
-			mriIdTextField.setText(String.valueOf(selectedPatient.getTokenNumber()));
-			patientNameField.setText(selectedPatient.getName());
+			mriIdTextField.setText(String.valueOf(selectedPatient.getMrdID()));
+			patientNameField.setText(selectedPatient.getFirstName());
 			patientPhoneField.setText(String.valueOf(selectedPatient.getPhoneNumber()));
 			patientEmailField.setText(selectedPatient.getEmail());
 			departmentComboBox.setSelectedItem(selectedDoctor.getDepartment());
@@ -192,7 +212,7 @@ public class AppointmentFormDialog extends JDialog {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-			// Disable MRI ID field and search button when rescheduling
+
 			mriIdTextField.setEnabled(false);
 			searchButton.setEnabled(false);
 		}
@@ -217,7 +237,17 @@ public class AppointmentFormDialog extends JDialog {
 		scheduleAssistantDialog.setLayout(new BorderLayout());
 		scheduleAssistantDialog.setLocationRelativeTo(this);
 
+		JPanel headerPanel = new JPanel();
+		headerPanel.setBackground(new Color(0, 153, 153));
+		JLabel headerLabel = new JLabel("Schedule Assistant");
+		headerLabel.setForeground(Color.WHITE);
+		headerLabel.setFont(new Font("Arial", Font.BOLD, 20));
+		headerPanel.add(headerLabel);
+		scheduleAssistantDialog.add(headerPanel, BorderLayout.NORTH);
+
+
 		JPanel slotsPanel = new JPanel();
+		slotsPanel.setBackground(Color.WHITE);
 		slotsPanel.setLayout(new GridLayout(0, 4, 10, 10));
 		slotsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 		timeSlots = AppointmentController.addScheduleList(selectedDoctor,
@@ -229,15 +259,21 @@ public class AppointmentFormDialog extends JDialog {
 				scheduleAssistantDialog.dispose();
 			});
 			slotsPanel.add(slotButton);
+
 		}
 		scheduleAssistantDialog.add(slotsPanel, BorderLayout.CENTER);
-		
+
 		JPanel closePanel = new JPanel();
-		
-		
+		closePanel.setBackground(new Color(0,150,139));
+
+
+
 		JButton closeButton = new JButton("Close");
+		closePanel.setBackground(new Color(0,150,139));
 		closeButton.addActionListener(e -> scheduleAssistantDialog.dispose());
-		
+		closeButton.setBackground(new Color(9,150,139));
+		closeButton.setForeground(Color.white);
+
 		closePanel.add(closeButton);
 		scheduleAssistantDialog.add(closePanel, BorderLayout.SOUTH);
 		scheduleAssistantDialog.setVisible(true);
@@ -258,8 +294,8 @@ public class AppointmentFormDialog extends JDialog {
 		try {
 			int mrdID = Integer.parseInt(mriIdTextField.getText());
 			for (Patient patient : patients) {
-				if (patient.getTokenNumber() == mrdID) {
-					patientNameField.setText(patient.getName());
+				if (patient.getMrdID() == mrdID) {
+					patientNameField.setText(patient.getFirstName());
 					patientPhoneField.setText(String.valueOf(patient.getPhoneNumber()));
 					patientEmailField.setText(patient.getEmail());
 					selectedPatient = patient;
@@ -313,7 +349,7 @@ public class AppointmentFormDialog extends JDialog {
 			Date appointmentDate = appointmentDateChooser.getDate();
 			Date appointmentTime = (Date) appointmentTimeSpinner.getValue();
 
-			// Ensure selectedDoctor is set
+
 			for (Doctor doctor : doctors) {
 				if (doctor.getName().equals(doctorName) && doctor.getDepartment().equals(department)
 						&& doctor.getSpecialization().equals(specialization)) {
@@ -332,8 +368,11 @@ public class AppointmentFormDialog extends JDialog {
 			LocalDate localDate = appointmentDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
 			String time = new SimpleDateFormat("hh:mm a").format(appointmentTime);
 			appointment = new Appointment(selectedPatient, selectedDoctor, localDate.format(formatter), time);
+
 			AppointmentController.addScheduleList(selectedDoctor,localDate.format(formatter));
 			AppointmentController.removeScheduleList(selectedDoctor, localDate.format(formatter),time);
+			//AppointmentController.getAppointments().add(appointment);
+			AppointmentController.saveAppointments();
 			AppointmentController.writeDoctorSchedule();
 			dispose();
 		} catch (Exception ex) {
