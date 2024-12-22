@@ -1,22 +1,24 @@
-package com.his.AppointmentSchedulingSystem.model;
+package com.appointment.his.model;
+
+import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class Appointment {
-@JsonProperty("patient")
+	@JsonProperty("patient")
 	private Patient patient;
 
-@JsonProperty("doctor")
+	@JsonProperty("doctor")
 	private Doctor doctor;
 
-@JsonProperty("appointment_Date")
+	@JsonProperty("appointment_Date")
 	private String appointmentDate;
 
 
-@JsonProperty("appointment_time")
+	@JsonProperty("appointment_time")
 	private String appointmentTime;
-@JsonProperty("Status")
-private Status status;
+	@JsonProperty("Status")
+	private Status status;
 
 	public Patient getPatient() {
 		return patient;
@@ -24,20 +26,10 @@ private Status status;
 
 	public Appointment() {
 		super();
-		// TODO Auto-generated constructor stub
+
 	}
 
-//	public Appointment(Patient patient, Doctor doctor, String appointmentDate, String department,
-//			double consultationFee, String appointmentTime, Status status) {
-//		super();
-//		this.patient = patient;
-//		this.doctor = doctor;
-//		this.appointmentDate = appointmentDate;
-//		this.department = department;
-//		this.consultationFee = consultationFee;
-//		this.appointmentTime = appointmentTime;
-//		this.status = status;
-//	}
+
 
 	public Appointment(Patient patient, Doctor doctor, String appointmentDate, String appointmentTime) {
 		super();
@@ -91,6 +83,22 @@ private Status status;
 				+ ", appointmentTime=" + appointmentTime + ", status=" + status + "]";
 	}
 
-	
-	
+	@Override
+	public int hashCode() {
+		return Objects.hash(appointmentDate, appointmentTime, doctor, patient, status);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Appointment other = (Appointment) obj;
+		return Objects.equals(appointmentDate, other.appointmentDate)
+				&& Objects.equals(appointmentTime, other.appointmentTime) && Objects.equals(doctor, other.doctor)
+				&& Objects.equals(patient, other.patient) && status == other.status;
+	}
 }
