@@ -1,4 +1,4 @@
-package com.his.AppointmentSchedulingSystem.controller;
+package com.appointment.his.controller;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,23 +11,31 @@ import java.util.stream.Collectors;
 import javax.swing.JOptionPane;
 import javax.swing.table.DefaultTableModel;
 
+import com.appointment.his.model.Appointment;
+import com.appointment.his.model.Doctor;
+import com.appointment.his.model.DoctorSchedule;
+import com.appointment.his.model.Patient;
+import com.appointment.his.model.Status;
+import com.appointment.his.view.AppointmentFormDialog;
+import com.appointment.his.view.AppointmentFormPanel;
+import com.appointment.his.view.AppointmentView;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.his.AppointmentSchedulingSystem.model.Appointment;
-import com.his.AppointmentSchedulingSystem.model.Doctor;
-import com.his.AppointmentSchedulingSystem.model.DoctorSchedule;
-import com.his.AppointmentSchedulingSystem.model.Patient;
-import com.his.AppointmentSchedulingSystem.model.Status;
-import com.his.AppointmentSchedulingSystem.view.AppointmentFormDialog;
-import com.his.AppointmentSchedulingSystem.view.AppointmentView;
 
 public class AppointmentController {
-	private List<Appointment> appointments;
+	private static List<Appointment> appointments;
+	public static List<Appointment> getAppointments() {
+		return appointments;
+	}
+
+	public static HashSet<DoctorSchedule> getDoctorSchedules() {
+		return doctorSchedules;
+	}
 	private AppointmentView view;
 
 	private List<Appointment> filteredAppointments;
-	String filePath = "appointments.json";
+	static String filePath = "appointments.json";
 	int mrdFilter = 0;
 	public static HashSet<DoctorSchedule> doctorSchedules;
 	static ObjectMapper mapper = new ObjectMapper();
@@ -35,11 +43,12 @@ public class AppointmentController {
 	static DoctorSchedule doctorSchedule;
 	static {
 		mapper.registerModule(new JavaTimeModule());
+		loadAppointments();
 	}
 
 	public AppointmentController(AppointmentView view) {
 		this.view = view;
-		
+
 		loadAppointments();
 
 		view.getScheduleButton().addActionListener(e -> scheduleAppointment());
@@ -58,7 +67,7 @@ public class AppointmentController {
 		updateTable(appointments);
 	}
 
-	private void loadAppointments() {
+	private static void loadAppointments() {
 		File file = new File(filePath);
 		if (file.exists()) {
 			try {
@@ -70,7 +79,7 @@ public class AppointmentController {
 		}
 	}
 
-	private void saveAppointments() {
+	public static void saveAppointments() {
 		try {
 			mapper.writerWithDefaultPrettyPrinter().writeValue(new File(filePath), appointments);
 		} catch (IOException e) {
@@ -90,8 +99,8 @@ public class AppointmentController {
 			String specialization = (doctor != null) ? doctor.getSpecialization() : "Unknown";
 
 			model.addRow(new Object[]{
-					a.getPatient().getName(),
-					a.getPatient().getTokenNumber(),
+					a.getPatient().getFirstName(),
+					a.getPatient().getMrdID(),
 					a.getPatient().getPhoneNumber(),
 					doctorName,
 					consultationFee,
@@ -115,7 +124,7 @@ public class AppointmentController {
 		String specialityFilter = view.getFilterSpecialityField().getText();
 
 		filteredAppointments = appointments.stream()
-				.filter(a -> (mrdFilter == 0 || a.getPatient().getTokenNumber() == mrdFilter)
+				.filter(a -> (mrdFilter == 0 || a.getPatient().getMrdID() == mrdFilter)
 						&& (doctorFilter.isEmpty() || a.getDoctor().getName().equalsIgnoreCase(doctorFilter))
 						&& (specialityFilter.isEmpty()
 								|| a.getDoctor().getSpecialization().equalsIgnoreCase(specialityFilter)))
@@ -131,12 +140,12 @@ public class AppointmentController {
 		updateTable(appointments);
 	}
 
-	private void scheduleAppointment() {
+	public void scheduleAppointment() {
 		AppointmentFormDialog formDialog = new AppointmentFormDialog(null);
 		formDialog.setVisible(true);
-		
-		
-		
+
+
+
 		Appointment newAppointment = formDialog.getAppointment();
 		if (newAppointment != null) {
 			appointments.add(newAppointment);
@@ -147,7 +156,7 @@ public class AppointmentController {
 			}
 			saveAppointments();
 			updateTable(appointments);
-			
+
 		}
 	}
 
@@ -159,6 +168,8 @@ public class AppointmentController {
 			formDialog.getMriIdTextField().setEnabled(false);
 			formDialog.getSearchButton().setEnabled(false);
 			formDialog.setVisible(true);
+//			AppointmentFormPanel.submitButton.setVisible(false);
+//			AppointmentFormPanel.rescheduleSubmit.setVisible(true);
 			Appointment rescheduledAppointment = formDialog.getAppointment();
 			if (rescheduledAppointment != null) {
 				appointments.set(selectedRow, rescheduledAppointment);
@@ -182,7 +193,7 @@ public class AppointmentController {
 	}
 
 	public static ArrayList<Patient> loadPatients() {
-		File file = new File("patient.json");
+		File file = new File("patientsData.json");
 		if (file.exists()) {
 			try {
 				return mapper.readValue(file, new TypeReference<ArrayList<Patient>>() {
@@ -195,7 +206,7 @@ public class AppointmentController {
 	}
 
 	public static ArrayList<Doctor> loadDoctors() {
-		File file = new File("Doctor.json");
+		File file = new File("DoctorsProfile.json");
 		if (file.exists()) {
 			try {
 				return mapper.readValue(file, new TypeReference<ArrayList<Doctor>>() {
@@ -228,7 +239,7 @@ public class AppointmentController {
 				return doctorScheduleTemp.getAvailableSlots();
 			}
 		}
-		System.out.println("New");
+
 		doctorSchedule = new DoctorSchedule(doctor, date);
 		doctorSchedules.add(doctorSchedule);
 		return doctorSchedule.getAvailableSlots();
@@ -244,9 +255,9 @@ public class AppointmentController {
 		try {
 			System.out.println(doctorSchedule);
 			mapper.writerWithDefaultPrettyPrinter().writeValue(new File("doctorSchedule.json"),doctorSchedules);
-			//System.out.println("Writted");
+
 		} catch (IOException e) {
-			//System.out.println("error");
+
 		}
 	}
 	public static void readDoctorSchedule() {
@@ -254,7 +265,7 @@ public class AppointmentController {
 			doctorSchedules = mapper.readValue(new File("doctorSchedule.json"), new TypeReference<HashSet<DoctorSchedule>>() {});
 			System.out.println("Readed");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
 			System.out.println(e.getMessage());
 			doctorSchedules = new HashSet<DoctorSchedule>();
 		}
